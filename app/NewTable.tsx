@@ -177,7 +177,12 @@ const NewTable: React.FC<TableProps> = ({ entities, data }) => {
 
     for (let i = 0; i < newTable.length; i++) {
       if (LineTable[i].value === '') {
-        LineTable[i].value = '∞'
+        const valueCellPrec = newTable[lineIndex - 1][i]
+        if (valueCellPrec && valueCellPrec.value !== '') {
+          LineTable[i] = valueCellPrec
+        } else {
+          LineTable[i].value = '∞'
+        }
       }
     }
   }
