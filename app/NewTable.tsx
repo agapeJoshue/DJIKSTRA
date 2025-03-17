@@ -6,6 +6,7 @@ import { newData } from './page'
 interface TableProps {
   entities: string[]
   data: newData[]
+  showCriticsPath: (critics: string[]) => void
 }
 
 interface colsUsed {
@@ -15,7 +16,7 @@ interface colsUsed {
   distance: number
 }
 
-const NewTable: React.FC<TableProps> = ({ entities, data }) => {
+const NewTable: React.FC<TableProps> = ({ entities, data, showCriticsPath }) => {
   const [initData, setData] = useState<newData[]>(data)
 
   useEffect(() => {
@@ -187,6 +188,8 @@ const NewTable: React.FC<TableProps> = ({ entities, data }) => {
     }
   }
 
+  const [critics, setCritics] = useState<string[]>([])
+  const [FromLast, setFrom] = useState<string>('')
   const nextStep = () => {
     const hasEmpty = verifyTable()
     if (hasEmpty) {
@@ -217,8 +220,29 @@ const NewTable: React.FC<TableProps> = ({ entities, data }) => {
         }
       }
     } else {
-      console.log('update graph')
-      console.log('colsAlredyUsed :', colsAlredyUsed)
+      if (critics.length === 0) {
+        const item = colsAlredyUsed[colsAlredyUsed.length - 1]
+        const last = entities[item.indexCol]
+        setCritics(prev => [...prev, last])
+        setFrom(newTable[item.indexLine][item.indexCol].from)
+      } else {
+        if(FromLast === '') {
+          console.log('Chemin critiaue :', critics)
+        } else {
+          const indexColFin = entities.indexOf(FromLast)
+          if(indexColFin >= 0) {
+            for (let i = 0; i < entities.length; i++) {
+              const isMin = newTable[i][indexColFin].min
+              if (isMin) {
+                setCritics(Prev => [...Prev, FromLast]);
+                setFrom(newTable[i][indexColFin].from);
+                break
+              }
+            }
+          }
+        }
+      }
+      showCriticsPath(critics)
     }
   }
 
