@@ -18,7 +18,7 @@ export interface newData {
 }
 
 export default function Home () {
-  const dataDefault = [
+  /* const dataDefault = [
     { debut: 'A', fin: 'B', delais: 2, editable: false },
     { debut: 'A', fin: 'C', delais: 1, editable: false },
     { debut: 'A', fin: 'D', delais: 4, editable: false },
@@ -33,7 +33,7 @@ export default function Home () {
     { debut: 'E', fin: 'G', delais: 5, editable: false },
     { debut: 'E', fin: 'F', delais: 6, editable: false },
     { debut: 'F', fin: 'G', delais: 2, editable: false }
-  ]
+  ] */
 
   const [model, setModel] = useState(false)
   const [initData, setInitialData] = useState<newData[]>([
@@ -53,11 +53,11 @@ export default function Home () {
   const updateEntity = () => {
     const ArrayString: string[] = []
 
-    if (dataDefault.some(d => d.fin === 'A')) {
+    if (initData.some(d => d.fin === 'A')) {
       ArrayString.push('A')
     }
 
-    dataDefault.forEach(data => {
+    initData.forEach(data => {
       if (!ArrayString.includes(data.debut)) {
         ArrayString.push(data.debut)
       }
@@ -91,13 +91,13 @@ export default function Home () {
 
       <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
         <h2 className='font-bold text-xl mb-5'>Graph</h2>
-        <Graph data={dataDefault} critics={critics} />
+        <Graph data={initData} critics={critics} />
       </section>
 
       <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-8'>
         <NewTable
           entities={entities}
-          data={dataDefault}
+          data={initData}
           showCriticsPath={showCriticsPath}
         />
       </section>

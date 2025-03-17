@@ -41,7 +41,13 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
   }
 
   const isCritics = (node: string) => {
-    return newCritics.includes(node);
+    return newCritics.includes(node)
+  }
+
+  const isCheCrit = (debut: string, fin: string) => {
+    const indexDeb = newCritics.indexOf(debut)
+    const indexfin = newCritics.indexOf(fin)
+    return indexDeb - indexfin === 1
   }
 
   return (
@@ -55,6 +61,7 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
           const { debut, fin, delais } = edge
           const start = nodePositions[debut]
           const end = nodePositions[fin]
+          const isActive = isCheCrit(debut, fin)
 
           if (!start || !end) return null
 
@@ -65,7 +72,7 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
                 y1={start.y}
                 x2={end.x}
                 y2={end.y}
-                stroke='black'
+                stroke={`${isActive ? 'red' : 'grey'}`}
                 strokeWidth='2'
               />
               <text
@@ -87,11 +94,16 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
               cx={pos.x}
               cy={pos.y}
               r='20'
-              fill={`${ isCritics(node) ? 'red' : 'white'}`}
-              stroke={`${ isCritics(node) ? 'blue' : 'black'}`}
+              fill={`${isCritics(node) ? 'red' : 'white'}`}
+              stroke={`${isCritics(node) ? 'blue' : 'black'}`}
               strokeWidth='2'
             />
-            <text x={pos.x - 5} y={pos.y + 5} fontSize='16' fill={`${ isCritics(node) ? 'white' : 'black'}`}>
+            <text
+              x={pos.x - 5}
+              y={pos.y + 5}
+              fontSize='16'
+              fill={`${isCritics(node) ? 'white' : 'black'}`}
+            >
               {node}
             </text>
           </g>

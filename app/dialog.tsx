@@ -8,14 +8,47 @@ interface useProps {
   onClose: () => void
   onSave: () => void
   children?: React.ReactNode
+  btnPropriety?: {
+    color: 'blue' | 'red' | 'grey' | 'green'
+    label: string
+  }
 }
 
-const Dialog: React.FC<useProps> = ({ model, title, onClose, children, onSave }) => {
+const Dialog: React.FC<useProps> = ({
+  model,
+  title,
+  onClose,
+  children,
+  onSave,
+  btnPropriety
+}) => {
   const [isOpen, setModel] = useState(model)
 
   useEffect(() => {
     setModel(model)
   }, [model])
+
+  const [color, setColor] = useState('blue')
+
+  useEffect(() => {
+    switch (btnPropriety?.color) {
+      case 'blue':
+        setColor('bg-blue-400 hover:bg-blue-500')
+        break
+      case 'red':
+        setColor('bg-red-400 hover:bg-red-500')
+        break
+      case 'grey':
+        setColor('bg-gray-400 hover:bg-gray-500')
+        break
+      case 'green':
+        setColor('bg-green-400 hover:bg-green-500')
+        break
+      default:
+        setColor('bg-blue-400 hover:bg-blue-500')
+        break
+    }
+  }, [btnPropriety])
   return (
     <div
       className={`fixed top-0 left-0 w-screen h-screen bg-[rgba(0,0,0,0.8)] ${
@@ -42,9 +75,9 @@ const Dialog: React.FC<useProps> = ({ model, title, onClose, children, onSave })
           <div className='p-6 flex items-center justify-end'>
             <button
               onClick={onSave}
-              className='bg-blue-400 text-base text-white py-2 px-5 rounded hover:bg-blue-500 font-semibold my-transition'
+              className={`${color} text-white text-base py-2 px-5 rounded font-semibold my-transition`}
             >
-              Save
+              {btnPropriety?.label ? btnPropriety.label : 'save'}
             </button>
           </div>
         </div>

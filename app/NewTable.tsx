@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react'
 import { newData } from './page'
+import Dialog from './dialog'
 
 interface TableProps {
   entities: string[]
@@ -16,7 +17,11 @@ interface colsUsed {
   distance: number
 }
 
-const NewTable: React.FC<TableProps> = ({ entities, data, showCriticsPath }) => {
+const NewTable: React.FC<TableProps> = ({
+  entities,
+  data,
+  showCriticsPath
+}) => {
   const [initData, setData] = useState<newData[]>(data)
 
   useEffect(() => {
@@ -190,6 +195,7 @@ const NewTable: React.FC<TableProps> = ({ entities, data, showCriticsPath }) => 
 
   const [critics, setCritics] = useState<string[]>([])
   const [FromLast, setFrom] = useState<string>('')
+  const [modal, setModalOpen] = useState(false)
   const nextStep = () => {
     const hasEmpty = verifyTable()
     if (hasEmpty) {
@@ -226,16 +232,16 @@ const NewTable: React.FC<TableProps> = ({ entities, data, showCriticsPath }) => 
         setCritics(prev => [...prev, last])
         setFrom(newTable[item.indexLine][item.indexCol].from)
       } else {
-        if(FromLast === '') {
-          console.log('Chemin critiaue :', critics)
+        if (FromLast === '') {
+          setModalOpen(true)
         } else {
           const indexColFin = entities.indexOf(FromLast)
-          if(indexColFin >= 0) {
+          if (indexColFin >= 0) {
             for (let i = 0; i < entities.length; i++) {
               const isMin = newTable[i][indexColFin].min
               if (isMin) {
-                setCritics(Prev => [...Prev, FromLast]);
-                setFrom(newTable[i][indexColFin].from);
+                setCritics(Prev => [...Prev, FromLast])
+                setFrom(newTable[i][indexColFin].from)
                 break
               }
             }
@@ -301,6 +307,16 @@ const NewTable: React.FC<TableProps> = ({ entities, data, showCriticsPath }) => 
           </div>
         </div>
       )}
+
+      <Dialog
+        model={modal}
+        title='FINISHED'
+        onClose={() => setModalOpen(false)}
+        onSave={() => setModalOpen(false)}
+        btnPropriety={{ color: 'grey', label: 'Okay' }}
+      >
+        <p>Merci de votre aimable attention!</p>
+      </Dialog>
     </>
   )
 }
