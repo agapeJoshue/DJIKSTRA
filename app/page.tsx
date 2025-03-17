@@ -1,7 +1,5 @@
 'use client'
 
-declare module 'aframe'
-
 import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import Dialog from './dialog'
@@ -14,11 +12,10 @@ export interface newData {
   debut: string
   fin: string
   delais: number
-  editable: boolean
 }
 
 export default function Home () {
-  /* const dataDefault = [
+  /* const [initData, setInitialData] = useState<newData[]>([
     { debut: 'A', fin: 'B', delais: 2, editable: false },
     { debut: 'A', fin: 'C', delais: 1, editable: false },
     { debut: 'A', fin: 'D', delais: 4, editable: false },
@@ -33,12 +30,12 @@ export default function Home () {
     { debut: 'E', fin: 'G', delais: 5, editable: false },
     { debut: 'E', fin: 'F', delais: 6, editable: false },
     { debut: 'F', fin: 'G', delais: 2, editable: false }
-  ] */
+  ]) */
 
   const [model, setModel] = useState(false)
-  const [initData, setInitialData] = useState<newData[]>([
-    { debut: 'A', fin: 'B', delais: 1, editable: false }
-  ])
+
+  const [initData, setInitialData] = useState<newData[]>([])
+
   const [entities, setEntity] = useState<string[]>([])
 
   const onDataChange = (data: newData[]) => {
@@ -88,19 +85,22 @@ export default function Home () {
           </button>
         </div>
       </nav>
+      {initData.length > 0 && (
+        <>
+          <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
+            <h2 className='font-bold text-xl mb-5'>Graph</h2>
+            <Graph data={initData} critics={critics} />
+          </section>
 
-      <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
-        <h2 className='font-bold text-xl mb-5'>Graph</h2>
-        <Graph data={initData} critics={critics} />
-      </section>
-
-      <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-8'>
-        <NewTable
-          entities={entities}
-          data={initData}
-          showCriticsPath={showCriticsPath}
-        />
-      </section>
+          <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-8'>
+            <NewTable
+              entities={entities}
+              data={initData}
+              showCriticsPath={showCriticsPath}
+            />
+          </section>
+        </>
+      )}
 
       <Dialog
         model={model}

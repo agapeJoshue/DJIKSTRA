@@ -40,7 +40,7 @@ const Formulaire: React.FC<useProps> = ({ initData, onDataChange }) => {
     setData(prevData => [
       ...prevData,
       {
-        debut: '',
+        debut: data.length === 0 ? 'A' : '',
         fin: '',
         delais: 1,
         editable: true
@@ -68,13 +68,13 @@ const Formulaire: React.FC<useProps> = ({ initData, onDataChange }) => {
         >
           <input
             type='text'
-            value={d.debut}
+            value={i === 0 ? 'A' : d.debut}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               handleChangeInput(e, i, 'debut')
             }
             className='outline-none border border-gray-500 rounded text-lg font-medium py-2 px-4 text-center'
             maxLength={1}
-            disabled={!d.editable}
+            disabled={i === 0}
             required
           />
           <div className='flex items-center gap-2'>
@@ -104,17 +104,12 @@ const Formulaire: React.FC<useProps> = ({ initData, onDataChange }) => {
             required
           />
 
-          { d.editable && (
-            <button
-              onClick={() => handleDeleteData(i)}
-              className='w-[40px] h-[40px] flex items-center justify-center text-gray-500 my-transition rounded-full hover:bg-gray-200 hover:text-gray-800'
-            >
-              <i className='ri-delete-back-2-line text-2xl font-semibold'></i>
-            </button>
-          )}
-          { !d.editable && (
-            <div></div>
-          )}
+          <button
+            onClick={() => handleDeleteData(i)}
+            className='w-[40px] h-[40px] flex items-center justify-center text-gray-500 my-transition rounded-full hover:bg-gray-200 hover:text-gray-800'
+          >
+            <i className='ri-delete-back-2-line text-2xl font-semibold'></i>
+          </button>
         </div>
       ))}
 

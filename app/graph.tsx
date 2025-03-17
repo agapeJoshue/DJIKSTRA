@@ -9,13 +9,13 @@ interface GraphProps {
 
 const Graph: React.FC<GraphProps> = ({ data, critics }) => {
   const [graphData, setGraphData] = useState<newData[]>(data)
-  const [nodePositions, setNodePositions] = useState<{
+  const [Positions, setPositions] = useState<{
     [key: string]: { x: number; y: number }
   }>({})
 
   useEffect(() => {
     setGraphData(data)
-    generateNodePositions(data)
+    generatePositions(data)
   }, [data])
 
   const [newCritics, setNewCritics] = useState(critics)
@@ -24,20 +24,20 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
     setNewCritics(critics)
   }, [critics])
 
-  const generateNodePositions = (data: newData[]) => {
+  const generatePositions = (data: newData[]) => {
     const nodes = Array.from(new Set(data.flatMap(d => [d.debut, d.fin])))
     const positions: { [key: string]: { x: number; y: number } } = {}
-    const spacingX = 120
-    const spacingY = 100
+    const espaceX = 120
+    const espaceY = 100
 
     nodes.forEach((node, index) => {
       positions[node] = {
-        x: 100 + index * spacingX,
-        y: 200 + (index % 2 === 0 ? 0 : spacingY)
+        x: 100 + index * espaceX,
+        y: 200 + (index % 2 === 0 ? 0 : espaceY)
       }
     })
 
-    setNodePositions(positions)
+    setPositions(positions)
   }
 
   const isCritics = (node: string) => {
@@ -59,8 +59,8 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
       >
         {graphData.map((edge, index) => {
           const { debut, fin, delais } = edge
-          const start = nodePositions[debut]
-          const end = nodePositions[fin]
+          const start = Positions[debut]
+          const end = Positions[fin]
           const isActive = isCheCrit(debut, fin)
 
           if (!start || !end) return null
@@ -79,7 +79,7 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
                 x={(start.x + end.x) / 2 + (start.y < end.y ? 10 : -10)}
                 y={(start.y + end.y) / 2 + (start.x < end.x ? -10 : 10)}
                 fontSize='18'
-                fill='black'
+                fill='blue'
                 fontWeight='semibold'
               >
                 {delais}
@@ -88,7 +88,7 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
           )
         })}
 
-        {Object.entries(nodePositions).map(([node, pos]) => (
+        {Object.entries(Positions).map(([node, pos]) => (
           <g key={node}>
             <circle
               cx={pos.x}
