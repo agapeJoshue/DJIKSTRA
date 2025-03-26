@@ -1,82 +1,109 @@
 'use client'
 
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
+import { useMemo, useState } from 'react'
 import Dialog from './dialog'
 import Formulaire from './formulaire'
+import NewGraph from './graph'
 import NewTable from './NewTable'
+import {
+  INIT_DATA,
+  InitData,
+  newData,
+  TableCell,
+  updateEntity,
+  complete_table,
+  find_critics_path
+} from './logique'
 
-const Graph = dynamic(() => import('./graph'), { ssr: false })
-
-export interface newData {
-  debut: string
-  fin: string
-  delais: number
-}
-
-export default function Home () {
-  const [initData, setInitialData] = useState<newData[]>([
-    { debut: 'A', fin: 'B', delais: 2 },
-    { debut: 'A', fin: 'C', delais: 1 },
-    { debut: 'A', fin: 'D', delais: 4 },
-    { debut: 'B', fin: 'E', delais: 1 },
-    { debut: 'B', fin: 'D', delais: 3 },
-    { debut: 'B', fin: 'C', delais: 2 },
-    { debut: 'C', fin: 'E', delais: 4 },
-    { debut: 'C', fin: 'F', delais: 5 },
-    { debut: 'D', fin: 'C', delais: 3 },
-    { debut: 'D', fin: 'E', delais: 3 },
-    { debut: 'D', fin: 'F', delais: 1 },
-    { debut: 'E', fin: 'G', delais: 5 },
-    { debut: 'E', fin: 'F', delais: 6 },
-    { debut: 'F', fin: 'G', delais: 2 }
-  ])
-
+const Dijkstra = () => {
   const [model, setModel] = useState(false)
+  const [initData, setInitialData] = useState<InitData[]>(INIT_DATA)
+  const [data, setData] = useState<newData[]>([])
+  const [entities, setEntities] = useState<string[]>([])
+  const [my_table, setTable] = useState<TableCell[][]>([])
+  const [step, setStep] = useState(0)
+  const [critics, setCritics] = useState<string[]>([])
+  const [modal_finished, set_modal_finished] = useState(false)
 
-  //const [initData, setInitialData] = useState<newData[]>([])
+  const createTableArray = useMemo(() => {
+    return (rows: number, cols: number) => {
+      return Array.from({ length: rows }, () =>
+        Array.from({ length: cols }, () => ({
+          value: '',
+          min: false,
+          from: '',
+          already_used: false,
+          isCritics: false
+        }))
+      )
+    }
+  }, [])
 
-  const [entities, setEntity] = useState<string[]>([])
-
-  const onDataChange = (data: newData[]) => {
+  const onDataChange = (data: InitData[]) => {
     setInitialData(data)
   }
 
-  const [onSave, setOnSave] = useState(false);
+  const [conditionsStep, updateConditionsStep] = useState({
+    show_graph: false,
+    table_completed: false,
+    show_critics: false
+  })
+
   const saveData = () => {
-    setOnSave(!onSave)
-    updateEntity()
+    const { newData, ArrayString } = updateEntity(initData)
+    setTable(createTableArray(ArrayString.length, ArrayString.length))
+    setEntities(ArrayString)
+    setData(newData)
     setModel(false)
-  }
-
-  const updateEntity = () => {
-    const ArrayString: string[] = []
-
-    if (initData.some(d => d.fin === 'A')) {
-      ArrayString.push('A')
-    }
-
-    initData.forEach(data => {
-      if (!ArrayString.includes(data.debut)) {
-        ArrayString.push(data.debut)
-      }
-      if (!ArrayString.includes(data.fin)) {
-        ArrayString.push(data.fin)
-      }
+    setStep(0)
+    updateConditionsStep({
+      show_graph: true,
+      table_completed: false,
+      show_critics: false
     })
-    setEntity(ArrayString)
   }
 
-  const [critics, setCritics] = useState<string[]>([])
-  const showCriticsPath = (critics: string[]) => {
-    setCritics(critics)
+  const nextStep = () => {
+    if (conditionsStep.show_graph && !conditionsStep.table_completed) {
+      // complete table
+      if (step < entities.length) {
+        complete_table(my_table, data, step, entities)
+        setStep(step + 1)
+      } else {
+        conditionsStep.table_completed = true
+        const { table, nextStep, critic } = find_critics_path(
+          my_table,
+          entities.length - 1,
+          entities
+        )
+        setCritics(prev => [...prev, critic])
+        setTable(table)
+        setStep(nextStep)
+      }
+    } else if (
+      conditionsStep.table_completed &&
+      !conditionsStep.show_critics &&
+      step >= 0
+    ) {
+      // show critics
+      const { table, nextStep, critic } = find_critics_path(
+        my_table,
+        step,
+        entities
+      )
+      setCritics(prev => [...prev, critic])
+      setTable(table)
+      setStep(nextStep)
+    } else {
+      set_modal_finished(true)
+    }
   }
 
   return (
     <div className='pb-16'>
       <nav className='flex items-center justify-between bg-blue-500 px-24 py-4 shadow-md fixed top-0 left-0 w-screen'>
         <h3 className='text-gray-100 font-semibold text-2xl'>
-          Algorithme de DJIKSTRA
+          Algorithme de DIJKSTRA
         </h3>
         <div className='flex items-center gap-1'>
           <button
@@ -87,22 +114,43 @@ export default function Home () {
           </button>
         </div>
       </nav>
-      {initData.length > 0 && (
-        <>
-          <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
-            <h2 className='font-bold text-xl mb-5'>Graph</h2>
-            <Graph data={initData} critics={critics} onSave={onSave} />
-          </section>
 
-          <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-8'>
-            <NewTable
-              onSave={onSave}
-              entities={entities}
-              data={initData}
-              showCriticsPath={showCriticsPath}
-            />
-          </section>
-        </>
+      {conditionsStep.show_graph ? (
+        <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
+          <div>
+            <h2 className='font-bold text-lg mb-5'>Graph</h2>
+          </div>
+
+          <NewGraph data={data} critics={critics} />
+          <NewTable entities={entities} table={my_table} />
+
+          <Dialog
+            model={modal_finished}
+            title='FINISHED'
+            onClose={() => set_modal_finished(false)}
+            onSave={() => set_modal_finished(false)}
+            btnPropriety={{ color: 'grey', label: 'Okay' }}
+          >
+            <p className='font-semibold text-lg text-gray-700'>
+              Merci de votre aimable attention!
+            </p>
+          </Dialog>
+
+          <div
+            className={`flex items-center justify-end mt-8 ${
+              entities.length > 0 ? '' : 'hidden'
+            }`}
+          >
+            <button
+              onClick={nextStep}
+              className='py-2 px-5 text-sm font-semibold text-white bg-blue-400 rounded shadow-md hover:bg-blue-500'
+            >
+              continue
+            </button>
+          </div>
+        </section>
+      ) : (
+        <section></section>
       )}
 
       <Dialog
@@ -116,3 +164,5 @@ export default function Home () {
     </div>
   )
 }
+
+export default Dijkstra

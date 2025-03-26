@@ -1,14 +1,14 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
-import { newData } from './page'
+import { newData } from './logique'
+
 interface GraphProps {
   data: newData[]
   critics: string[]
-  onSave: boolean
 }
 
-const Graph: React.FC<GraphProps> = ({ data, critics, onSave }) => {
+const NewGraph: React.FC<GraphProps> = ({ data, critics }) => {
   const [graphData, setGraphData] = useState<newData[]>(data)
   const [Positions, setPositions] = useState<{
     [key: string]: { x: number; y: number }
@@ -18,14 +18,6 @@ const Graph: React.FC<GraphProps> = ({ data, critics, onSave }) => {
     setGraphData(data)
     generatePositions(data)
   }, [data])
-
-  useEffect(() => setNewCritics([]), [onSave])
-
-  const [newCritics, setNewCritics] = useState(critics)
-
-  useEffect(() => {
-    setNewCritics(critics)
-  }, [critics])
 
   const generatePositions = (data: newData[]) => {
     const nodes = Array.from(new Set(data.flatMap(d => [d.debut, d.fin])))
@@ -42,6 +34,11 @@ const Graph: React.FC<GraphProps> = ({ data, critics, onSave }) => {
 
     setPositions(positions)
   }
+
+  const [newCritics, setNewCritics] = useState(critics)
+  useEffect(() => {
+    setNewCritics(critics)
+  }, [critics])
 
   const isCritics = (node: string) => {
     return newCritics.includes(node)
@@ -116,4 +113,4 @@ const Graph: React.FC<GraphProps> = ({ data, critics, onSave }) => {
   )
 }
 
-export default Graph
+export default NewGraph
