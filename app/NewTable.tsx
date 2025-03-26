@@ -7,6 +7,7 @@ import Dialog from './dialog'
 interface TableProps {
   entities: string[]
   data: newData[]
+  onSave: boolean
   showCriticsPath: (critics: string[]) => void
 }
 
@@ -20,7 +21,8 @@ interface colsUsed {
 const NewTable: React.FC<TableProps> = ({
   entities,
   data,
-  showCriticsPath
+  showCriticsPath,
+  onSave
 }) => {
   const [initData, setData] = useState<newData[]>(data)
 
@@ -196,6 +198,12 @@ const NewTable: React.FC<TableProps> = ({
   const [critics, setCritics] = useState<string[]>([])
   const [FromLast, setFrom] = useState<string>('')
   const [modal, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    setCritics([])
+    setCols([])
+  }, [onSave])
+
   const nextStep = () => {
     const hasEmpty = verifyTable()
     if (hasEmpty) {

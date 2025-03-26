@@ -15,26 +15,26 @@ export interface newData {
 }
 
 export default function Home () {
-  /* const [initData, setInitialData] = useState<newData[]>([
-    { debut: 'A', fin: 'B', delais: 2, editable: false },
-    { debut: 'A', fin: 'C', delais: 1, editable: false },
-    { debut: 'A', fin: 'D', delais: 4, editable: false },
-    { debut: 'B', fin: 'E', delais: 1, editable: false },
-    { debut: 'B', fin: 'D', delais: 3, editable: false },
-    { debut: 'B', fin: 'C', delais: 2, editable: false },
-    { debut: 'C', fin: 'E', delais: 4, editable: false },
-    { debut: 'C', fin: 'F', delais: 5, editable: false },
-    { debut: 'D', fin: 'C', delais: 3, editable: false },
-    { debut: 'D', fin: 'E', delais: 3, editable: false },
-    { debut: 'D', fin: 'F', delais: 1, editable: false },
-    { debut: 'E', fin: 'G', delais: 5, editable: false },
-    { debut: 'E', fin: 'F', delais: 6, editable: false },
-    { debut: 'F', fin: 'G', delais: 2, editable: false }
-  ]) */
+  const [initData, setInitialData] = useState<newData[]>([
+    { debut: 'A', fin: 'B', delais: 2 },
+    { debut: 'A', fin: 'C', delais: 1 },
+    { debut: 'A', fin: 'D', delais: 4 },
+    { debut: 'B', fin: 'E', delais: 1 },
+    { debut: 'B', fin: 'D', delais: 3 },
+    { debut: 'B', fin: 'C', delais: 2 },
+    { debut: 'C', fin: 'E', delais: 4 },
+    { debut: 'C', fin: 'F', delais: 5 },
+    { debut: 'D', fin: 'C', delais: 3 },
+    { debut: 'D', fin: 'E', delais: 3 },
+    { debut: 'D', fin: 'F', delais: 1 },
+    { debut: 'E', fin: 'G', delais: 5 },
+    { debut: 'E', fin: 'F', delais: 6 },
+    { debut: 'F', fin: 'G', delais: 2 }
+  ])
 
   const [model, setModel] = useState(false)
 
-  const [initData, setInitialData] = useState<newData[]>([])
+  //const [initData, setInitialData] = useState<newData[]>([])
 
   const [entities, setEntity] = useState<string[]>([])
 
@@ -42,7 +42,9 @@ export default function Home () {
     setInitialData(data)
   }
 
+  const [onSave, setOnSave] = useState(false);
   const saveData = () => {
+    setOnSave(!onSave)
     updateEntity()
     setModel(false)
   }
@@ -89,11 +91,12 @@ export default function Home () {
         <>
           <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
             <h2 className='font-bold text-xl mb-5'>Graph</h2>
-            <Graph data={initData} critics={critics} />
+            <Graph data={initData} critics={critics} onSave={onSave} />
           </section>
 
           <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-8'>
             <NewTable
+              onSave={onSave}
               entities={entities}
               data={initData}
               showCriticsPath={showCriticsPath}

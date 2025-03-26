@@ -5,9 +5,10 @@ import { newData } from './page'
 interface GraphProps {
   data: newData[]
   critics: string[]
+  onSave: boolean
 }
 
-const Graph: React.FC<GraphProps> = ({ data, critics }) => {
+const Graph: React.FC<GraphProps> = ({ data, critics, onSave }) => {
   const [graphData, setGraphData] = useState<newData[]>(data)
   const [Positions, setPositions] = useState<{
     [key: string]: { x: number; y: number }
@@ -17,6 +18,8 @@ const Graph: React.FC<GraphProps> = ({ data, critics }) => {
     setGraphData(data)
     generatePositions(data)
   }, [data])
+
+  useEffect(() => setNewCritics([]), [onSave])
 
   const [newCritics, setNewCritics] = useState(critics)
 
