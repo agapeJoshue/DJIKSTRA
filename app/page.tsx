@@ -56,6 +56,7 @@ const Dijkstra = () => {
     setData(newData)
     setModel(false)
     setStep(0)
+    setCritics([])
     updateConditionsStep({
       show_graph: true,
       table_completed: false,
