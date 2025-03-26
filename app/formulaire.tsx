@@ -1,15 +1,15 @@
 'use client'
 
 import React, { ChangeEvent, useEffect, useState } from 'react'
-import { newData } from './page'
+import { InitData } from './logique'
 
 interface useProps {
-  initData: newData[]
-  onDataChange: (newData: newData[]) => void
+  initData: InitData[]
+  onDataChange: (newData: InitData[]) => void
 }
 
 const Formulaire: React.FC<useProps> = ({ initData, onDataChange }) => {
-  const [data, setData] = useState<newData[]>(initData)
+  const [data, setData] = useState<InitData[]>(initData)
 
   const handleChangeInput = (
     e: ChangeEvent<HTMLInputElement>,
