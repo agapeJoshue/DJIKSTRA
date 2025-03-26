@@ -150,12 +150,17 @@ const Dijkstra = () => {
           </div>
         </section>
       ) : (
-        <section></section>
+        <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24 py-32'>
+          <div className='flex flex-col items-center justify-center'>
+            <i className='ri-error-warning-line text-[100px] text-gray-500'></i>
+            <p className='font-medium text-base text-gray-600'>You have no data</p>
+          </div>
+        </section>
       )}
 
       <Dialog
         model={model}
-        title='Title'
+        title='Create data'
         onClose={() => setModel(false)}
         onSave={saveData}
       >

@@ -115,7 +115,7 @@ const Formulaire: React.FC<useProps> = ({ initData, onDataChange }) => {
 
       <button
         onClick={handleAddData}
-        className='mt-6 p-3 w-full text-base font-semibold rounded border-2 border-dashed border-gray-600 text-gray-600'
+        className='mt-3 p-3 w-full text-base font-semibold rounded border-2 border-dashed border-gray-600 text-gray-600'
       >
         Add input
       </button>

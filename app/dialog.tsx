@@ -72,7 +72,7 @@ const Dialog: React.FC<useProps> = ({
           <div className='px-8 pb-6'>{children}</div>
 
           {/* FOOTER */}
-          <div className='p-6 flex items-center justify-end'>
+          <div className='px-6 pb-6 flex items-center justify-end'>
             <button
               onClick={onSave}
               className={`${color} text-white text-base py-2 px-5 rounded font-semibold my-transition`}
