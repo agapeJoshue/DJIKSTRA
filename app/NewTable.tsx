@@ -42,15 +42,14 @@ const NewTable: React.FC<useProps> = ({ table, entities }) => {
                   {lines.map((cell, i) => (
                     <td
                       key={i}
-                      className={`border border-gray-400 ${
-                        cell.min && !cell.isCritics
-                          ? 'bg-yellow-200 text-blue-500'
-                          : cell.value === '-'
+                      className={`border border-gray-400 ${cell.min || cell.max && !cell.isCritics
+                        ? 'bg-yellow-200 text-blue-500'
+                        : cell.value === '-'
                           ? 'bg-gray-100 text-transparent'
                           : cell.min && cell.isCritics
-                          ? 'bg-yellow-500 text-white'
-                          : ''
-                      }`}
+                            ? 'bg-yellow-500 text-white'
+                            : cell.max && cell.isCritics ? 'bg-yellow-200 text-blue-500' : ''
+                        }`}
                     >
                       <div className='h-[40px] flex items-center justify-center font-semibold'>
                         <p>

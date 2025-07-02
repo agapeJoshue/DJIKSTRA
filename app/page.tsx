@@ -12,17 +12,25 @@ import {
   TableCell,
   updateEntity,
   complete_table,
-  find_critics_path
+  complete_table2,
+  find_critics_path,
+  find_critics_path_max
 } from './logique'
 
 const Dijkstra = () => {
+  const [message, setMessage] = useState('Merci de votre aimable attention!');
   const [model, setModel] = useState(false)
   const [initData, setInitialData] = useState<InitData[]>(INIT_DATA)
-  const [data, setData] = useState<newData[]>([])
+  const [data, setData] = useState<newData[]>([]);
+  const [data2, setData2] = useState<newData[]>([]);
   const [entities, setEntities] = useState<string[]>([])
+  const [entities2, setEntities2] = useState<string[]>([])
   const [my_table, setTable] = useState<TableCell[][]>([])
+  const [my_table2, setTable2] = useState<TableCell[][]>([])
   const [step, setStep] = useState(0)
+  const [step2, setStep2] = useState(0)
   const [critics, setCritics] = useState<string[]>([])
+  const [critics2, setCritics2] = useState<string[]>([])
   const [modal_finished, set_modal_finished] = useState(false)
 
   const createTableArray = useMemo(() => {
@@ -31,6 +39,7 @@ const Dijkstra = () => {
         Array.from({ length: cols }, () => ({
           value: '',
           min: false,
+          max: false,
           from: '',
           already_used: false,
           isCritics: false
@@ -46,21 +55,31 @@ const Dijkstra = () => {
   const [conditionsStep, updateConditionsStep] = useState({
     show_graph: false,
     table_completed: false,
-    show_critics: false
+    show_critics: false,
+    show_graph_max: false,
+    table_max_completed: false,
+    show_max_critics: false
   })
 
   const saveData = () => {
     const { newData, ArrayString } = updateEntity(initData)
     setTable(createTableArray(ArrayString.length, ArrayString.length))
+    setTable2(createTableArray(ArrayString.length, ArrayString.length))
     setEntities(ArrayString)
+    setEntities2(ArrayString)
     setData(newData)
+    setData2(newData)
     setModel(false)
     setStep(0)
     setCritics([])
+    setCritics2([])
     updateConditionsStep({
       show_graph: true,
       table_completed: false,
-      show_critics: false
+      show_critics: false,
+      show_graph_max: false,
+      table_max_completed: false,
+      show_max_critics: false
     })
   }
 
@@ -81,11 +100,7 @@ const Dijkstra = () => {
         setTable(table)
         setStep(nextStep)
       }
-    } else if (
-      conditionsStep.table_completed &&
-      !conditionsStep.show_critics &&
-      step >= 0
-    ) {
+    } else if (conditionsStep.table_completed && !conditionsStep.show_critics && step >= 0) {
       // show critics
       const { table, nextStep, critic } = find_critics_path(
         my_table,
@@ -96,10 +111,46 @@ const Dijkstra = () => {
       setTable(table)
       setStep(nextStep)
     } else {
-      set_modal_finished(true)
+      conditionsStep.show_critics = true;
+      conditionsStep.show_graph_max = true;
+      setMessage("Très bien ! Maintenant que le calcul du minimum est terminé, nous allons nous concentrer sur le maximum.");
+      set_modal_finished(true);
     }
   }
 
+  const nextStep2 = () => {
+    if (conditionsStep.show_graph_max && !conditionsStep.table_max_completed) {
+      // complete table max
+      if (step2 < entities2.length) {
+        complete_table2(my_table2, data2, step2, entities2)
+        setStep2(step2 + 1)
+      } else {
+        conditionsStep.table_max_completed = true
+        const { table, nextStep, critic } = find_critics_path_max(
+          my_table2,
+          entities2.length - 1,
+          entities2
+        )
+        setCritics2(prev => [...prev, critic])
+        setTable2(table)
+        setStep2(nextStep)
+      }
+    } else if (conditionsStep.table_max_completed && !conditionsStep.show_max_critics && step2 >= 0) {
+      // show critics
+      const { table, nextStep, critic } = find_critics_path_max(
+        my_table2,
+        step2,
+        entities2
+      )
+      setCritics2(prev => [...prev, critic])
+      setTable2(table)
+      setStep2(nextStep)
+    } else {
+      conditionsStep.show_max_critics = true
+      setMessage('Merci de votre aimable attention!');
+      set_modal_finished(true)
+    }
+  }
   return (
     <div className='pb-16'>
       <nav className='flex items-center justify-between bg-blue-500 px-24 py-4 shadow-md fixed top-0 left-0 w-screen'>
@@ -119,11 +170,22 @@ const Dijkstra = () => {
       {conditionsStep.show_graph ? (
         <section className='bg-white p-8 rounded-md shadow-lg w-[80%] mx-auto mt-24'>
           <div>
-            <h2 className='font-bold text-lg mb-5'>Graph</h2>
+            <h2 className='font-bold text-lg mb-5'>Graph MIN</h2>
           </div>
 
           <NewGraph data={data} critics={critics} />
           <NewTable entities={entities} table={my_table} />
+
+          {conditionsStep.show_critics && (
+            <div className='mt-10 py-8'>
+              <div>
+                <h2 className='font-bold text-lg mb-5'>Graph MAX</h2>
+              </div>
+
+              <NewGraph data={data2} critics={critics2} />
+              <NewTable entities={entities2} table={my_table2} />
+            </div>
+          )}
 
           <Dialog
             model={modal_finished}
@@ -133,21 +195,29 @@ const Dijkstra = () => {
             btnPropriety={{ color: 'grey', label: 'Okay' }}
           >
             <p className='font-semibold text-lg text-gray-700'>
-              Merci de votre aimable attention!
+              {message}
             </p>
           </Dialog>
 
           <div
-            className={`flex items-center justify-end mt-8 ${
-              entities.length > 0 ? '' : 'hidden'
-            }`}
+            className={`flex items-center justify-end mt-8 ${entities.length > 0 ? '' : 'hidden'
+              }`}
           >
-            <button
-              onClick={nextStep}
-              className='py-2 px-5 text-sm font-semibold text-white bg-blue-400 rounded shadow-md hover:bg-blue-500'
-            >
-              continue
-            </button>
+            {conditionsStep.show_critics ? (
+              <button
+                onClick={nextStep2}
+                className='py-2 px-5 text-sm font-semibold text-white bg-blue-400 rounded shadow-md hover:bg-blue-500 my-transition'
+              >
+                continue
+              </button>
+            ) : (
+              <button
+                onClick={nextStep}
+                className='py-2 px-5 text-sm font-semibold text-white bg-blue-400 rounded shadow-md hover:bg-blue-500 my-transition'
+              >
+                continue
+              </button>
+            )}
           </div>
         </section>
       ) : (

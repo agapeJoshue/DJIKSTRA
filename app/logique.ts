@@ -21,6 +21,7 @@ export interface colsUsed {
 export interface TableCell {
     value: string;
     min: boolean;
+    max: boolean;
     from: string;
     already_used: boolean;
     isCritics: boolean
@@ -120,7 +121,7 @@ function FindMin(table: TableCell[][], entities: string[]) {
     table[LastIndexLine][LastIndexColumn].min = true;
     for (let i = 0; i < entities.length; i++) {
         if (table[i] && table[i][LastIndexColumn].value === '') {
-            table[i][LastIndexColumn] = { value: '-', min: false, from: '', already_used: false, isCritics: false }
+            table[i][LastIndexColumn] = { value: '-', min: false, max: false, from: '', already_used: false, isCritics: false }
         }
     }
 }
@@ -128,10 +129,10 @@ function FindMin(table: TableCell[][], entities: string[]) {
 export const complete_table = (table: TableCell[][], data: newData[], step: number, entities: string[]) => {
     const lineTable = table[step];
     if (step === 0) {
-        lineTable[step] = { value: '0', min: true, from: '', already_used: false, isCritics: false }
+        lineTable[step] = { value: '0', min: true, max: false, from: '', already_used: false, isCritics: false }
         for (let i = 1; i < lineTable.length; i++) {
-            lineTable[i] = { value: '∞', min: false, from: '', already_used: false, isCritics: false };
-            table[i][step] = { value: '-', min: false, from: '', already_used: false, isCritics: false }
+            lineTable[i] = { value: '∞', min: false, max: false, from: '', already_used: false, isCritics: false };
+            table[i][step] = { value: '-', min: false, max: false, from: '', already_used: false, isCritics: false }
         }
     } else {
         const { LastMinValue, LastIndexLine, LastIndexColumn, LastTacheMin } = findMinTable(table, entities)
@@ -140,7 +141,7 @@ export const complete_table = (table: TableCell[][], data: newData[], step: numb
             if (colTable.value === '') {
                 const tache = data.filter(t => (t.debut === LastTacheMin && t.fin === entities[i]) || (t.fin === LastTacheMin && t.debut === entities[i]));
                 if (tache.length > 0) {
-                    lineTable[i] = { value: (LastMinValue + tache[0].delais).toString(), min: false, from: LastTacheMin, already_used: false, isCritics: false }
+                    lineTable[i] = { value: (LastMinValue + tache[0].delais).toString(), min: false, max: false, from: LastTacheMin, already_used: false, isCritics: false }
                 } else {
                     colTable.value = '∞';
                 }
@@ -150,6 +151,77 @@ export const complete_table = (table: TableCell[][], data: newData[], step: numb
         FindMin(table, entities)
     }
 }
+
+
+function verify_cols_max(table: TableCell[][], index_col: number, entities: string[]) {
+    let hasMax = false;
+    for (let i = 0; i < entities.length; i++) {
+        if (table[i][index_col].max && table[i][index_col].already_used) {
+            hasMax = true;
+        }
+    }
+    return hasMax;
+}
+
+function findMaxTable(table: TableCell[][], entities: string[]) {
+    let LastMaxValue = Number.MIN_SAFE_INTEGER;
+    let LastIndexLine = 0;
+    let LastIndexColumn = 0;
+    let LastTacheMax = '';
+
+    for (let i = entities.length - 1; i >= 0; i--) {
+        const line = table[i];
+        for (let j = line.length - 1; j >= 0; j--) {
+            const cell = line[j];
+            const hasMaxInCol = verify_cols_max(table, j, entities);
+            if (!hasMaxInCol) {
+                if (cell.value !== '' && cell.value !== '-' && cell.value !== '∞' && parseInt(cell.value) > LastMaxValue) {
+                    LastIndexLine = i;
+                    LastIndexColumn = j;
+                    LastMaxValue = parseInt(cell.value);
+                    LastTacheMax = entities[LastIndexColumn];
+                }
+            }
+        }
+    }
+    return { LastMaxValue, LastIndexLine, LastIndexColumn, LastTacheMax };
+}
+
+function FindMax(table: TableCell[][], entities: string[]) {
+    const { LastIndexLine, LastIndexColumn } = findMaxTable(table, entities);
+    table[LastIndexLine][LastIndexColumn].max = true;
+    for (let i = 0; i < entities.length; i++) {
+        if (table[i] && table[i][LastIndexColumn].value === '') {
+            table[i][LastIndexColumn] = { value: '-', min: false, from: '', already_used: false, isCritics: false, max: false };
+        }
+    }
+}
+
+export const complete_table2 = (table: TableCell[][], data: newData[], step: number, entities: string[]) => {
+    const lineTable = table[step];
+    if (step === 0) {
+        lineTable[step] = { value: '0', min: false, from: '', already_used: false, isCritics: false, max: true };
+        for (let i = 1; i < lineTable.length; i++) {
+            lineTable[i] = { value: '∞', min: false, from: '', already_used: false, isCritics: false, max: false };
+            table[i][step] = { value: '-', min: false, from: '', already_used: false, isCritics: false, max: false };
+        }
+    } else {
+        const { LastMaxValue, LastIndexLine, LastIndexColumn, LastTacheMax } = findMaxTable(table, entities);
+        for (let i = 0; i < lineTable.length; i++) {
+            const colTable = lineTable[i];
+            if (colTable.value === '') {
+                const tache = data.filter(t => (t.debut === LastTacheMax && t.fin === entities[i]) || (t.fin === LastTacheMax && t.debut === entities[i]));
+                if (tache.length > 0) {
+                    lineTable[i] = { value: (LastMaxValue + tache[0].delais).toString(), min: false, from: LastTacheMax, already_used: false, isCritics: false, max: false };
+                } else {
+                    colTable.value = '∞';
+                }
+            }
+        }
+        table[LastIndexLine][LastIndexColumn].already_used = true;
+        FindMax(table, entities);
+    }
+};
 
 interface refact_tache { indexLine: number, indexCol: number, tache: TableCell }
 
@@ -189,3 +261,49 @@ export const find_critics_path = (table: TableCell[][], step: number, entities: 
 
     return { table, nextStep, critic: last_entity }
 }
+
+function findTacheHasSameFromValueMax(table: TableCell[][], tache: refact_tache, step: number): refact_tache {
+    let lists_tache: refact_tache = tache;
+
+    for (let i = step - 1; i >= 0; i--) { 
+        for (let j = 1; j < step; j++) {
+            const colIndex = step - j;
+            if (colIndex >= 0 && table[i] && table[i][colIndex]) {
+                const cell = table[i][colIndex];
+
+                if (cell.max && cell.from === tache.tache.from && cell.value !== '' && cell.value !== '-' && cell.value !== '∞' && parseInt(cell.value) > parseInt(lists_tache.tache.value)) {
+                    lists_tache = {
+                        indexLine: i,
+                        indexCol: colIndex,
+                        tache: cell
+                    };
+                }
+            }
+        }
+    }
+    return lists_tache;
+}
+
+export const find_critics_path_max = (table: TableCell[][], step: number, entities: string[]) => {
+    let nextStep = entities.length;
+    const current_entity = entities[step];
+    const indexOfEntity = entities.indexOf(current_entity);
+
+    for (let i = 0; i < entities.length; i++) {
+        if (table[i] && table[i][indexOfEntity]) {
+            const cell = table[i][indexOfEntity];
+
+            if (cell.max) {
+                const cellRefact = { indexLine: i, indexCol: indexOfEntity, tache: cell };
+
+                const lists_tache = findTacheHasSameFromValueMax(table, cellRefact, step);
+
+                table[lists_tache.indexLine][lists_tache.indexCol].isCritics = true;
+
+                nextStep = entities.indexOf(lists_tache.tache.from);
+            }
+        }
+    }
+
+    return { table, nextStep, critic: current_entity };
+};
