@@ -71,6 +71,7 @@ const Dijkstra = () => {
     setData2(newData)
     setModel(false)
     setStep(0)
+    setStep2(0)
     setCritics([])
     setCritics2([])
     updateConditionsStep({
